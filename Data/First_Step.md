@@ -19,6 +19,7 @@ newgrp docker
 -image docker
 
 mkdir -p ~/masterclass-nats && cd ~/masterclass-nats
+cat << 'EOF' > docker-compose.yml
 services:
   nats:
     image: nats:latest
