@@ -1,57 +1,80 @@
-First Step
+# Primer paso: preparación del servidor
 
-Enable SSH en the software
+## Actualizar el servidor
 
-make this in the server
-
--update server
+```bash
 sudo apt update && sudo apt upgrade -y
 sudo apt install -y ca-certificates curl
+```
 
--instal docker
+## Instalar Docker
+
+```bash
 curl -fsSL https://get.docker.com -o get-docker.sh
 sudo sh get-docker.sh
-
--permision
 sudo usermod -aG docker $USER
 newgrp docker
+```
 
--image docker
+## Crear la infraestructura
 
-mkdir -p ~/masterclass-nats && cd ~/masterclass-nats
-cat << 'EOF' > docker-compose.yml
-services:
-  nats:
-    image: nats:latest
-    container_name: nats-server
-    command: "-js -m 8222"
-    ports:
-      - "4222:4222"   # Puerto de clientes (ESP32, Python, Node-RED)
-      - "8222:8222"   # Puerto de monitoreo HTTP
-    restart: unless-stopped
+Desde la carpeta donde se copiará el proyecto:
 
-  nodered:
-    image: nodered/node-red:latest
-    container_name: nodered-hmi
-    ports:
-      - "1880:1880"
-    depends_on:
-      - nats
-    restart: unless-stopped
-EOF
+```bash
+mkdir -p ~/masterclass-nats
+cd ~/masterclass-nats
+```
 
--star server
+Crea el archivo `docker-compose.yml` de la raíz del repositorio o cópialo desde el proyecto:
 
+```bash
 docker compose up -d
+docker compose ps
+```
 
+NATS estará disponible en:
 
--install python 
+- Clientes: `4222`
+- Monitor HTTP: `8222`
+- Node-RED: `1880`
 
+## Preparar Python
+
+```bash
 sudo apt install -y python3-venv python3-pip
 python3 -m venv venv
 source venv/bin/activate
 pip install nats-py
+```
 
-cd ~/masterclass-nats && source venv/bin/activate && python suscriptor_it.py
+Ejecuta los programas desde la raíz del proyecto. Los scripts ya usan `nats://localhost:4222` por defecto.
 
-cd ~/masterclass-nats && source venv/bin/activate && python emisor_ot.py
+Terminal 1:
+
+```bash
+source venv/bin/activate
+python Python/suscriptor_it.py
+```
+
+Terminales adicionales:
+
+```bash
+source venv/bin/activate
+python Python/emisor_ot_1.py
+```
+
+```bash
+source venv/bin/activate
+python Python/emisor_ot_2.py
+```
+
+```bash
+source venv/bin/activate
+python Python/emisor_ot_3.py
+```
+
+Para detener la infraestructura:
+
+```bash
+docker compose down
+```
